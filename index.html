@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gerente IA · Light Bike Shop</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0a0a0b;--s:#111114;--s2:#18181c;--br:#2a2a30;--br2:#3a3a42;--t:#f0f0f2;--mu:#6b6b78;--mu2:#9090a0;--ac:#4ade80;--ad:#1a3a26;--wa:#fb923c;--wd:#3a1f0a;--da:#f87171;--dd:#3a1010;--in:#60a5fa;--id:#0f2040;--mo:'DM Mono',monospace;--sa:'DM Sans',sans-serif}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--t);font-family:var(--sa);font-size:14px;min-height:100vh}
+header{display:flex;align-items:center;justify-content:space-between;padding:16px 28px;border-bottom:1px solid var(--br);background:var(--s);position:sticky;top:0;z-index:10}
+.logo{display:flex;align-items:center;gap:10px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--ac);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.logo-text{font-size:13px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--mu2)}
+.logo-text span{color:var(--t)}
+.hright{display:flex;align-items:center;gap:16px}
+.ts{font-family:var(--mo);font-size:11px;color:var(--mu)}
+.btn{background:transparent;border:1px solid var(--br2);color:var(--t);font-family:var(--sa);font-size:12px;font-weight:500;padding:7px 16px;border-radius:6px;cursor:pointer;transition:all .15s}
+.btn:hover{border-color:var(--ac);color:var(--ac)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+main{padding:28px;max-width:1200px;margin:0 auto}
+/* States */
+.state-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;text-align:center;gap:16px}
+.state-empty h2{font-size:18px;font-weight:500}
+.state-empty p{color:var(--mu2);font-size:13px;max-width:320px;line-height:1.6}
+.btnp{background:var(--ac);border:none;color:#060f0a;font-family:var(--sa);font-size:13px;font-weight:600;padding:10px 24px;border-radius:8px;cursor:pointer;margin-top:8px}
+.btnp:hover{opacity:.88}
+.btnp:disabled{opacity:.4;cursor:not-allowed}
+.state-load{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px;text-align:center}
+.bar-w{width:260px;height:3px;background:var(--br);border-radius:3px;overflow:hidden}
+.bar{height:100%;background:var(--ac);border-radius:3px;width:0;transition:width .4s ease}
+.lbl{font-family:var(--mo);font-size:11px;color:var(--mu)}
+.state-err{display:none;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:12px;text-align:center}
+.err-box{background:var(--dd);border:1px solid #5a1010;border-radius:8px;padding:14px 20px;font-family:var(--mo);font-size:12px;color:var(--da);max-width:460px;word-break:break-word}
+.dash{display:none}
+/* KPIs */
+.kg{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.kc{background:var(--s);border:1px solid var(--br);border-radius:10px;padding:16px 18px}
+.kl{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--mu);margin-bottom:8px;font-weight:500}
+.kv{font-family:var(--mo);font-size:28px;font-weight:500;line-height:1;margin-bottom:6px}
+.ks{font-size:11px;color:var(--mu2)}
+/* Layout */
+.sec{margin-bottom:24px}
+.st{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:var(--mu);font-weight:500;margin-bottom:12px}
+.tc{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.ca{background:var(--s);border:1px solid var(--br);border-radius:10px;padding:18px}
+.ct{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--mu2);margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--br)}
+/* Atendentes */
+.ar{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--br)}
+.ar:last-child{border-bottom:none}
+.an{font-weight:500;font-size:13px;display:flex;align-items:center;gap:8px}
+.av{width:28px;height:28px;border-radius:50%;background:var(--ad);border:1px solid var(--ac);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:var(--ac);flex-shrink:0}
+.gr{font-family:var(--mo);font-size:14px;font-weight:500;padding:2px 8px;border-radius:4px}
+.ga{background:var(--ad);color:var(--ac)}
+.gb{background:var(--wd);color:var(--wa)}
+.gc{background:var(--dd);color:var(--da)}
+/* Métricas */
+.mr{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--br);font-size:12px}
+.mr:last-child{border-bottom:none}
+.ml{color:var(--mu2)}
+.mv{font-family:var(--mo);font-weight:500}
+/* Gargalos */
+.bi{background:var(--wd);border:1px solid #5a3010;border-radius:8px;padding:12px 14px;margin-bottom:8px}
+.bi:last-child{margin-bottom:0}
+.bt{font-weight:500;font-size:13px;color:var(--wa);margin-bottom:4px}
+.bd{font-size:12px;color:#c07040;line-height:1.5}
+/* Conversas críticas */
+.ci{background:var(--s2);border:1px solid var(--br);border-radius:8px;padding:14px;margin-bottom:10px}
+.ci:last-child{margin-bottom:0}
+.ch{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.cl{font-weight:500;font-size:13px}
+.tg{font-size:10px;font-weight:500;padding:2px 8px;border-radius:4px;background:var(--dd);color:var(--da)}
+.cp{font-size:12px;color:var(--mu2);margin-bottom:8px;line-height:1.5}
+.sb{background:var(--id);border:1px solid #1a3a60;border-radius:6px;padding:10px 12px;font-size:12px;color:#7ab8f5;line-height:1.5}
+.sl{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:var(--in);font-weight:600;margin-bottom:4px}
+/* Resumo */
+.es{background:var(--s);border:1px solid var(--br);border-left:3px solid var(--ac);border-radius:10px;padding:18px 20px;font-size:13px;color:var(--mu2);line-height:1.8}
+.es strong{color:var(--t);font-weight:500}
+.dv{height:1px;background:var(--br);margin:24px 0}
+.empty-msg{color:var(--ac);font-size:12px}
+@media(max-width:768px){.kg{grid-template-columns:repeat(2,1fr)}.tc{grid-template-columns:1fr}main{padding:16px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <div class="dot"></div>
+    <div class="logo-text"><span>Light Bike Shop</span> · Gerente IA</div>
+  </div>
+  <div class="hright">
+    <div class="ts" id="ts">—</div>
+    <button class="btn" id="btnR" onclick="run()" disabled>Atualizar</button>
+  </div>
+</header>
+
+<main>
+  <div class="state-empty" id="sEmpty">
+    <h2>Gerente IA de Atendimento</h2>
+    <p>Analisa todos os atendimentos do Kommo e gera um relatório gerencial completo com IA.</p>
+    <button class="btnp" id="btnS" onclick="run()">Gerar análise agora</button>
+  </div>
+
+  <div class="state-load" id="sLoad">
+    <div class="bar-w"><div class="bar" id="bar"></div></div>
+    <div class="lbl" id="lbl">Aguarde...</div>
+  </div>
+
+  <div class="state-err" id="sErr">
+    <h2>Erro na análise</h2>
+    <div class="err-box" id="errMsg">—</div>
+    <button class="btnp" onclick="run()">Tentar novamente</button>
+  </div>
+
+  <div class="dash" id="dash"></div>
+</main>
+
+<script>
+const KOMMO_TOKEN = 'LaF2dLy2G6S4nUkqIMjsSqq4BZ8A4MIEv7JL90BNVedWuqUf3Zv0zyDGWP9Lf27F';
+const KOMMO_URL   = 'https://lightbikeshop.kommo.com/api/v4/leads?with=notes,contacts&limit=50';
+const ANTHROPIC_KEY = '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';
+const PROXY = 'https://corsproxy.io/?url=';
+
+function ss(s) {
+  document.getElementById('sEmpty').style.display = s==='e' ? 'flex' : 'none';
+  document.getElementById('sLoad').style.display  = s==='l' ? 'flex' : 'none';
+  document.getElementById('sErr').style.display   = s==='er' ? 'flex' : 'none';
+  document.getElementById('dash').style.display   = s==='d' ? 'block' : 'none';
+}
+function pr(p, t) {
+  document.getElementById('bar').style.width = p + '%';
+  document.getElementById('lbl').textContent = t;
+}
+function ini(n) { return (n||'?').split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase(); }
+function gcl(g) { if(!g) return 'gb'; const v=(g+'').toUpperCase(); if(v[0]==='A') return 'ga'; if(v[0]==='C') return 'gc'; return 'gb'; }
+function ce(t,c,x) { const e=document.createElement(t); if(c) e.className=c; if(x!=null) e.textContent=x; return e; }
+
+function render(d) {
+  const m = document.getElementById('dash');
+  m.innerHTML = '';
+  const now = new Date();
+  document.getElementById('ts').textContent = 'atualizado ' + now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  document.getElementById('btnR').disabled = false;
+
+  // KPIs
+  const kg = ce('div','kg');
+  [
+    ['Total de atendimentos','in', d.kpis?.total, 'leads ativos'],
+    ['Resolvidos','ac', d.kpis?.resolvidos, 'finalizados'],
+    ['Em andamento','wa', d.kpis?.em_andamento, 'aguardando resposta'],
+    ['Críticos','da', d.kpis?.criticos, 'requerem atenção']
+  ].forEach(([label, color, val, sub]) => {
+    const c = ce('div','kc');
+    const v = ce('div','kv'); v.style.color = 'var(--'+color+')'; v.textContent = val ?? '—';
+    c.appendChild(ce('div','kl',label)); c.appendChild(v); c.appendChild(ce('div','ks',sub));
+    kg.appendChild(c);
+  });
+  m.appendChild(kg);
+  m.appendChild(ce('div','dv'));
+
+  // Atendentes + Métricas
+  const tc = ce('div','tc sec');
+  const ca1 = ce('div','ca'); ca1.appendChild(ce('div','ct','Performance por atendente'));
+  (d.atendentes||[]).forEach(a => {
+    const r = ce('div','ar');
+    const nm = ce('div','an');
+    nm.appendChild(ce('div','av',ini(a.nome))); nm.appendChild(ce('span',null,a.nome));
+    r.appendChild(nm);
+    const rt = ce('div'); rt.style.cssText = 'display:flex;align-items:center;gap:8px;font-size:12px;color:var(--mu2)';
+    rt.appendChild(ce('span',null,(a.atendimentos||0)+' atend.'));
+    rt.appendChild(ce('span',null,a.tempo_resposta||'—'));
+    rt.appendChild(ce('div','gr '+gcl(a.nota), a.nota||'—'));
+    r.appendChild(rt); ca1.appendChild(r);
+  });
+  if(!(d.atendentes||[]).length) ca1.appendChild(Object.assign(ce('div','empty-msg'),'Sem dados'));
+
+  const ca2 = ce('div','ca'); ca2.appendChild(ce('div','ct','Métricas operacionais'));
+  (d.metricas||[]).forEach(mt => {
+    const r = ce('div','mr');
+    const v = ce('span','mv',mt.valor);
+    v.style.color = mt.cor==='green'?'var(--ac)':mt.cor==='red'?'var(--da)':mt.cor==='orange'?'var(--wa)':'var(--t)';
+    r.appendChild(ce('span','ml',mt.label)); r.appendChild(v); ca2.appendChild(r);
+  });
+  tc.appendChild(ca1); tc.appendChild(ca2); m.appendChild(tc);
+
+  // Gargalos
+  const sg = ce('div','sec'); const cag = ce('div','ca'); cag.appendChild(ce('div','ct','Gargalos detectados'));
+  if((d.gargalos||[]).length) {
+    d.gargalos.forEach(g => { const bi=ce('div','bi'); bi.appendChild(ce('div','bt',g.titulo)); bi.appendChild(ce('div','bd',g.descricao)); cag.appendChild(bi); });
+  } else { cag.appendChild(ce('div','empty-msg','Nenhum gargalo crítico identificado.')); }
+  sg.appendChild(cag); m.appendChild(sg);
+
+  // Conversas críticas
+  const sc = ce('div','sec'); const cac = ce('div','ca'); cac.appendChild(ce('div','ct','Conversas críticas · análise e sugestões'));
+  if((d.conversas_criticas||[]).length) {
+    d.conversas_criticas.forEach(cv => {
+      const ci=ce('div','ci');
+      const hd=ce('div','ch'); hd.appendChild(ce('div','cl',cv.lead)); hd.appendChild(ce('span','tg',cv.status));
+      ci.appendChild(hd); ci.appendChild(ce('div','cp',cv.problema));
+      const sb=ce('div','sb'); sb.appendChild(ce('div','sl','Como o atendente deveria ter agido'));
+      const tx=ce('div'); tx.innerHTML=cv.sugestao; sb.appendChild(tx); ci.appendChild(sb); cac.appendChild(ci);
+    });
+  } else { cac.appendChild(ce('div','empty-msg','Nenhuma conversa crítica identificada.')); }
+  sc.appendChild(cac); m.appendChild(sc);
+
+  // Resumo
+  const se = ce('div','sec'); se.appendChild(ce('div','st','Resumo executivo'));
+  const es = ce('div','es'); es.innerHTML = d.resumo_executivo||'—'; se.appendChild(es); m.appendChild(se);
+}
+
+async function run() {
+  document.getElementById('btnS') && (document.getElementById('btnS').disabled = true);
+  document.getElementById('btnR').disabled = true;
+  ss('l'); pr(0, 'Conectando ao Kommo...');
+
+  // 1. Busca Kommo via proxy CORS
+  let kommoData;
+  try {
+    pr(15, 'Buscando atendimentos...');
+    const r = await fetch(PROXY + encodeURIComponent(KOMMO_URL), {
+      headers: { 'Authorization': 'Bearer ' + KOMMO_TOKEN, 'Accept': 'application/json' }
+    });
+    if (!r.ok) throw new Error('Kommo HTTP ' + r.status);
+    kommoData = await r.json();
+    pr(40, 'Dados recebidos. Analisando com IA...');
+  } catch(e) {
+    ss('er');
+    document.getElementById('errMsg').textContent = 'Erro ao buscar Kommo: ' + e.message;
+    document.getElementById('btnR').disabled = false;
+    return;
+  }
+
+  // 2. Monta prompt com dados reais
+  const leads = (kommoData._embedded?.leads) || [];
+  const resumo = leads.slice(0,40).map(l => ({
+    id: l.id,
+    nome: l.name,
+    responsavel: l.responsible_user_id,
+    status: l.status_id,
+    pipeline: l.pipeline_id,
+    criado: l.created_at,
+    atualizado: l.updated_at,
+    notas: (l._embedded?.notes||[]).slice(0,5).map(n => ({
+      tipo: n.note_type,
+      texto: typeof n.params?.text === 'string' ? n.params.text.slice(0,200) : '',
+      criado: n.created_at
+    }))
+  }));
+
+  const prompt = `Você é gerente sênior de atendimento da Light Bike Shop (loja de bicicletas).
+Analise os ${leads.length} atendimentos abaixo e retorne SOMENTE JSON válido sem markdown:
+
+{"kpis":{"total":${leads.length},"resolvidos":0,"em_andamento":0,"criticos":0},"atendentes":[{"nome":"","atendimentos":0,"tempo_resposta":"","nota":""}],"metricas":[{"label":"","valor":"","cor":""}],"gargalos":[{"titulo":"","descricao":""}],"conversas_criticas":[{"lead":"","status":"","problema":"","sugestao":""}],"resumo_executivo":""}
+
+DADOS: ${JSON.stringify(resumo).slice(0, 4000)}`;
+
+  pr(55, 'IA analisando ' + leads.length + ' atendimentos...');
+
+  // 3. Chama Claude
+  try {
+    const ar = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 1500,
+        system: 'Gerente sênior de atendimento. Responda SOMENTE JSON válido sem markdown.',
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    pr(85, 'Processando relatório...');
+    const ad = await ar.json();
+    if (ad.error) throw new Error(ad.error.message);
+    const raw = ad.content?.[0]?.text || '{}';
+    const analysis = JSON.parse(raw.replace(/```json|```/g,'').trim());
+    pr(100, 'Concluído!');
+    setTimeout(() => { ss('d'); render(analysis); }, 400);
+  } catch(e) {
+    ss('er');
+    document.getElementById('errMsg').textContent = 'Erro na análise IA: ' + e.message;
+    document.getElementById('btnR').disabled = false;
+  }
+}
+</script>
+</body>
+</html>
